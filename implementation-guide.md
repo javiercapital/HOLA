@@ -1,0 +1,243 @@
+# Guía de Implementación del Gráfico de Torta
+
+## 1. Dependencias Requeridas
+```bash
+npm install recharts
+```
+
+## 2. Estructura de Archivos
+```
+src/
+├── components/
+│   └── FinancingCostChart.tsx    # Componente del gráfico
+├── types/
+│   └── CalculationResults.ts     # Tipos de datos
+└── pages/
+    └── YourPage.tsx              # Tu página existente
+```
+
+## 3. Código del Componente (FinancingCostChart.tsx)
+```tsx
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart as PieChartIcon } from 'lucide-react'; // Opcional
+
+// Colores del gráfico
+const COLORS = [
+  '#1e40af', '#3b82f6', '#60a5fa', '#93c5fd', 
+  '#dbeafe', '#1e3a8a', '#2563eb'
+];
+
+interface FinancingCostChartProps {
+  results: {
+    estructuracion: number;
+    colocacion: number;
+    representacion: number;
+    calificacionRiesgo: number;
+    contribucionAnual: number;
+    registroNacional: number;
+    cvv: number;
+    iva: number;
+    bvcc: number;
+    liquidacion: number;
+    inscripcionISIN: number;
+    publicacionAviso: number;
+    costoTotalEmision: number;
+    valorNominal: number;
+  };
+}
+
+export default function FinancingCostChart({ results }: FinancingCostChartProps) {
+  // Preparar datos para el gráfico
+  const chartData = [
+    {
+      name: 'Estructuración',
+      value: results.estructuracion || 0,
+      percentage: ((results.estructuracion || 0) / (results.costoTotalEmision || 1)) * 100,
+    },
+    {
+      name: 'Colocación',
+      value: results.colocacion || 0,
+      percentage: ((results.colocacion || 0) / (results.costoTotalEmision || 1)) * 100,
+    },
+    {
+      name: 'Representación',
+      value: results.representacion || 0,
+      percentage: ((results.representacion || 0) / (results.costoTotalEmision || 1)) * 100,
+    },
+    {
+      name: 'Calificación Riesgo',
+      value: results.calificacionRiesgo || 0,
+      percentage: ((results.calificacionRiesgo || 0) / (results.costoTotalEmision || 1)) * 100,
+    },
+    {
+      name: 'Otros Costos',
+      value: (results.cvv || 0) + (results.iva || 0) + (results.bvcc || 0) + 
+             (results.liquidacion || 0) + (results.inscripcionISIN || 0) + 
+             (results.publicacionAviso || 0) + (results.contribucionAnual || 0) + 
+             (results.registroNacional || 0),
+      percentage: 0, // Se calculará después
+    },
+  ].filter(item => item.value > 0);
+
+  // Calcular porcentaje para "Otros Costos"
+  const otrosIndex = chartData.findIndex(item => item.name === 'Otros Costos');
+  if (otrosIndex !== -1) {
+    chartData[otrosIndex].percentage = (chartData[otrosIndex].value / (results.costoTotalEmision || 1)) * 100;
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-VE', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-800">{data.name}</p>
+          <p className="text-blue-600">{formatCurrency(data.value)}</p>
+          <p className="text-gray-600">{data.percentage.toFixed(1)}% del total</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  if (chartData.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+      <div className="flex items-center mb-4">
+        <PieChartIcon className="mr-2 h-5 w-5 text-blue-600" />
+        <h3 className="text-lg font-bold text-gray-800">
+          Distribución de Costos de Financiamiento
+        </h3>
+      </div>
+      
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      
+      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex justify-between items-center">
+          <span className="font-semibold text-blue-800">Costo Total de Emisión:</span>
+          <span className="font-bold text-blue-900 text-lg">
+            {formatCurrency(results.costoTotalEmision || 0)}
+          </span>
+        </div>
+        <div className="flex justify-between items-center mt-1">
+          <span className="text-sm text-blue-700">Como % del Valor Nominal:</span>
+          <span className="text-sm font-semibold text-blue-800">
+            {(((results.costoTotalEmision || 0) / (results.valorNominal || 1)) * 100).toFixed(2)}%
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## 4. Cómo Usar el Componente en tu Página
+```tsx
+import FinancingCostChart from './components/FinancingCostChart';
+
+function YourPage() {
+  // Tus datos de cálculo
+  const calculationResults = {
+    estructuracion: 2000,
+    colocacion: 4000,
+    representacion: 250,
+    calificacionRiesgo: 1500,
+    contribucionAnual: 500,
+    registroNacional: 100,
+    cvv: 108,
+    iva: 17.28,
+    bvcc: 500,
+    liquidacion: 250,
+    inscripcionISIN: 160,
+    publicacionAviso: 25,
+    costoTotalEmision: 9510.28,
+    valorNominal: 100000,
+  };
+
+  return (
+    <div>
+      {/* Tu contenido existente */}
+      
+      {/* Agregar el gráfico donde quieras */}
+      <div className="mt-6">
+        <FinancingCostChart results={calculationResults} />
+      </div>
+    </div>
+  );
+}
+```
+
+## 5. Estilos CSS Necesarios (si no usas Tailwind)
+```css
+.chart-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.chart-summary {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+}
+```
+
+## 6. Pasos de Implementación Ordenados
+
+1. **Instalar recharts**: `npm install recharts`
+2. **Crear el componente** en tu carpeta de componentes
+3. **Importar el componente** en tu página existente
+4. **Pasar los datos** de cálculo como props
+5. **Posicionar el gráfico** donde quieras que aparezca
+6. **Ajustar estilos** según tu diseño
+
+## 7. Personalización Opcional
+
+- **Cambiar colores**: Modifica el array `COLORS`
+- **Agregar más datos**: Añade más elementos al array `chartData`
+- **Cambiar tamaño**: Modifica la altura en `<div className="h-80">`
+- **Personalizar tooltip**: Modifica el componente `CustomTooltip`
+
+¡Listo! Esto te dará un gráfico de torta completamente funcional para mostrar la distribución de costos.

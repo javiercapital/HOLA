@@ -1,0 +1,281 @@
+Estimado LLM Experto en Programación,
+
+Necesito tu asistencia para desarrollar una aplicación web completa para un simulador de inversión. La aplicación debe ser interactiva, permitir la entrada de datos por parte del usuario, realizar cálculos financieros complejos y generar reportes PDF personalizados. Esta aplicación se publicará en la web.
+
+A continuación, se detallan todas las especificaciones y modificaciones acumuladas durante nuestra conversación, con un énfasis crucial en la adaptación de la interfaz de usuario (UI) y el contenido del reporte PDF según el perfil del usuario, incluyendo ahora más secciones personalizables para la "Empresa Emisora".
+
+1. Objetivo de la Aplicación:
+
+Crear un simulador web interactivo para un producto de inversión ("Papeles Comerciales") que permita al usuario:
+
+Ingresar datos específicos de la inversión (según su perfil).
+
+Calcular los rendimientos (para el inversionista) y costos asociados (para el emisor).
+
+Generar un reporte PDF detallado, cuyo contenido y extensión variará drásticamente dependiendo del perfil del usuario (Inversionista o Empresa Emisora).
+
+2. Funcionalidad del Simulador (Interfaz de Usuario y Entradas - ¡CRÍTICO!):
+
+La interfaz de usuario (UI) debe ser clara, interactiva y fácil de usar. La visibilidad de los campos de entrada y los resultados en la UI cambiará dinámicamente según la selección del "Perfil de Usuario".
+
+Perfil de Usuario: (NUEVO CAMPO CRÍTICO)
+
+Selector con opciones: "Inversionista", "Empresa Emisora".
+
+Lógica de UI Dinámica:
+
+Si se selecciona "Inversionista":
+
+Solo debe aparecer el campo para llenar:
+
+Monto a invertir (Valor Nominal): Campo numérico.
+
+El simulador debe notificar (mostrar como resultado en la UI):
+
+Tasa de Interés Anual (Cupón): (Esta tasa se deriva de los parámetros del "Papel Comercial" que la empresa emisora definiría, no es un input directo del inversionista en este perfil).
+
+Capital + Intereses Ganados: (Valor Nominal + Ganancia Neta).
+
+Rentabilidad (ROI) Total: (De acuerdo a la tasa de interés del papel comercial).
+
+Todos los demás campos de entrada (Plazo, Frecuencias, Tipos de Empresa/Moneda/Cupón, Nombres de Empresa, Descripciones, Uso de Fondos, Entorno, etc.) deben estar OCULTOS o NO EDITABLES para el inversionista. Se asume que estos parámetros son fijos para el "Papel Comercial" que se está simulando para el inversionista.
+
+Si se selecciona "Empresa Emisora":
+
+Todos los siguientes campos de entrada deben estar visibles y editables:
+
+Monto a invertir (Valor Nominal): Campo numérico.
+
+Plazo de la inversión: Campo numérico en días.
+
+Tasa de Interés Anual (Cupón): Campo numérico (ej. 13 para 13%).
+
+Frecuencia de Pago de Intereses: Selector con opciones: "Mensual", "Trimestral", "Semestral", "Anual".
+
+Frecuencia de Amortización de Capital: Selector con opciones: "Anual", "Al Vencimiento".
+
+Tipo de Empresa para Registro Nacional de Valores: Selector con opciones: "PYME" (aplica 1%) o "No PYME" (aplica 2%).
+
+Moneda de Emisión: Selector con opciones: "Bolívares" o "Dólares".
+
+Condicional: Si se selecciona "Bolívares", se deben habilitar dos campos numéricos adicionales:
+
+Tipo de Cambio Oficial Bs/USD (Inicial): Para la conversión inicial del Valor Nominal.
+
+Tipo de Cambio Oficial Bs/USD (Al Vencimiento): Para la proyección de valores al final del plazo.
+
+Tipo de Cupón: Selector con opciones: "Con Cupón Periódico" o "Cero Cupón".
+
+Nombre de la Empresa Emisora: Campo de texto libre para personalizar.
+
+Descripción Detallada de la Empresa Emisora: Campo de texto libre para personalizar.
+
+(NUEVOS) Uso de Fondos (Detallado): Campo de texto libre para que el usuario personalice.
+
+(NUEVOS) Entorno: Campo de texto libre para que el usuario personalice la información de mercado.
+
+Los resultados mostrados en la UI para la Empresa Emisora deben ser:
+
+COSTO TOTAL EMISION (la suma de todos los gastos + intereses).
+
+COSTO FINANCIAMIENTO (el porcentaje).
+
+No se debe mostrar ROI para la Empresa Emisora.
+
+3. Datos Fijos y Comisiones (Base de Cálculo):
+
+Los siguientes datos son la base para los cálculos, con los ajustes específicos según la entrada del usuario. Base Anual para Cálculos: SIEMPRE 360 días.
+
+Precio: 100% (el valor efectivo inicial es igual al valor nominal).
+
+Comisiones y Gastos (porcentajes sobre el Valor Nominal o montos fijos):
+
+Registro Nacional de Valores: AJUSTABLE POR EL USUARIO: 1% si "PYME", 2% si "No PYME".
+
+Contribución Anual: 0.5%.
+
+Calificación de Riesgo: $1,500.00 (monto fijo).
+
+Estructuración: 2%.
+
+Colocación: 4%.
+
+Representación: 0.25%.
+
+Inscripción Código ISIN: AJUSTABLE SEGÚN PLAZO INGRESADO POR EL USUARIO:
+
+Hasta 90 días: $38
+
+91-180 días: $80
+
+181-270 días: $118
+
+271-365 días: $160
+
+Publicación Aviso de Prensa: $25.00 (monto fijo).
+
+CVV: 0.03% MENSUAL sobre el Valor Nominal. El monto total del CVV se calcula multiplicando este porcentaje mensual por el número de meses completos en el plazo (ej. para 360 días, son 12 meses).
+
+IVA: 16% aplicado ÚNICAMENTE sobre el monto total del CVV.
+
+BVCC: 0.5%.
+
+Liquidación: AJUSTABLE POR EL USUARIO:
+
+Si la moneda de emisión es "Bolívares": 0.25% sobre el Valor Nominal.
+
+Si la moneda de emisión es "Dólares": No aplica (0%).
+
+4. Cálculos del Simulador (Lógica de Negocio):
+
+El simulador debe realizar los siguientes cálculos. Es importante que la lógica de cálculo sea robusta para ambos perfiles, incluso si no todos los resultados se muestran en la UI o PDF de un perfil específico.
+
+Valor Efectivo: (Siempre igual al Valor Nominal si el precio es 100%).
+
+Amortización de Capital: En base a la frecuencia seleccionada por el usuario (o asumida si el perfil es Inversionista).
+
+Intereses Totales:
+
+Cálculo: Siempre sobre el Valor Nominal inicial (o el principal pendiente si hay amortizaciones periódicas, pero para el plazo completo sobre el nominal si no hay amortización previa) y la tasa de cupón anual, proporcionalmente al plazo en días (usando base de 360 días).
+
+Si "Cero Cupón": Los intereses totales se acumulan y se pagan al vencimiento.
+
+Si "Con Cupón Periódico": Los intereses se distribuyen y pagan según la frecuencia seleccionada.
+
+Detalle de todas las comisiones y gastos: Calcular los montos absolutos de cada uno de los ítems listados en la sección 3.
+
+Costo Total Emisión: SUMA de TODAS las comisiones y gastos desglosados (incluyendo CVV e IVA corregidos, y Liquidación según moneda) MÁS el monto de los "Intereses Totales". Este es el costo total para el emisor.
+
+Costo de Financiamiento (%): (Costo Total Emision / Valor Nominal) * 100.
+
+Ganancia Neta (para el inversionista): Intereses Totales. (El inversionista solo recibe el interés y el capital).
+
+Rentabilidad (ROI) Total: (Ganancia Neta / Valor Nominal) * 100.
+
+Rentabilidad (ROI) Anualizado: ((1 + ROI Total / 100)^(360 / Plazo en Días) - 1) * 100.
+
+Conversión a Bolívares (si aplica):
+
+Si la moneda de emisión es "Bolívares", todos los montos en USD (Valor Nominal, Intereses Totales, Ganancia Neta, Costo Total Emisión, y cada comisión/gasto individual) deben calcularse también en Bolívares.
+
+Los montos iniciales (comisiones/gastos) deben convertirse usando el Tipo de Cambio Inicial (Bs/USD).
+
+Los montos al vencimiento (Valor Nominal, Intereses Totales, Ganancia Neta, Costo Total Emisión) deben proyectarse usando el Tipo de Cambio al Vencimiento (Bs/USD).
+
+5. Generación de Reporte PDF (Contenido Dinámico por Perfil - ¡CRÍTICO!):
+
+El simulador debe generar un reporte en formato PDF. El contenido de este PDF dependerá CRÍTICALMENTE del "Perfil de Usuario" seleccionado.
+
+A. REPORTE PDF PARA PERFIL "INVERSIONISTA":
+
+Activación: Si el usuario selecciona "Inversionista".
+
+Contenido: El PDF debe ser EXTREMADAMENTE CONCISO Y ENFOCADO en la perspectiva del inversionista. Solo debe contener:
+
+Capital a invertir (Valor Nominal): El monto ingresado por el inversionista.
+
+Capital + Intereses Ganados: El monto total que el inversionista recupera (Valor Nominal + Ganancia Neta).
+
+Rentabilidad (ROI) Total: El porcentaje de retorno de la inversión.
+
+Elementos a OMITIR COMPLETAMENTE para este perfil en el PDF:
+
+Todos los demás datos de simulación (plazo, frecuencias, tipos de empresa/moneda/cupón, etc.).
+
+Resumen de la Oportunidad, Uso de Fondos (general y detallado), Desempeño Financiero, El Emisor, Entorno, Datos Claves de la Inversión Simulada.
+
+La tabla detallada de Cálculos y Desglose de Costos (incluyendo comisiones y gastos individuales, Costo Total Emisión, Costo Financiamiento).
+
+ROI Anualizado, Cómo Invertir, Contacto.
+
+B. REPORTE PDF PARA PERFIL "EMPRESA EMISORA":
+
+Activación: Si el usuario selecciona "Empresa Emisora".
+
+Contenido: El PDF debe ser completo y detallado, incluyendo:
+
+Datos del Cliente y Simulación:
+
+Monto invertido, plazo, tasa de interés, frecuencias de pago/amortización, tipo de empresa, moneda de emisión, tipos de cambio (si aplica), tipo de cupón.
+
+Resumen de la Oportunidad:
+
+Texto similar a image_e40f59.png, adaptado con los valores de la simulación (Valor Nominal, Plazo, Tasa de Interés, Frecuencia de Pago de Cupón, Frecuencia de Amortización de Capital).
+
+Uso de los Fondos (General):
+
+"Capital de trabajo para adquisición de materia prima y producción del T3 y T4 2024." (Texto fijo).
+
+Desempeño Financiero:
+
+Información fija: "2023 905 Unidades Vendidas, Ingresos de +USD 18 MM", "2024 +2800 Unidades Vendidas, Ingresos de +USD 56 MM", "Margen Neto 18%", "Costos de producción constantes para 2024-2025", "Calificación de Riesgos por Global Ratings Calificadora de Riesgo con más de 30 años de experiencia." (Texto fijo).
+
+El Emisor:
+
+Debe mostrar el Nombre de la Empresa Emisora y la Descripción Detallada de la Empresa Emisora ingresados por el usuario.
+
+(MODIFICADO) Uso de Fondos (Detallado):
+
+Debe mostrar el texto ingresado por el usuario en el campo correspondiente.
+
+(MODIFICADO) Entorno:
+
+Debe mostrar el texto ingresado por el usuario en el campo correspondiente.
+
+Datos Claves de la Inversión Simulada:
+
+Replicar la tabla "DATOS CLAVES" de la image_e40f59.png con los valores de la simulación: Instrumento (Papeles Comerciales), Plazo, Interés, Pago de Cupón (Cero Cupón o Frecuencia), Pago de Capital, Garantía (Prenda Mercantil).
+
+Tabla de Cálculos y Desglose de Costos (Visión Completa para Emisor):
+
+Una tabla clara y bien formateada (similar a image_e40b23.png y image_e573fe.png) mostrando:
+
+Valor Nominal, Precio, Cupón, Plazo, Valor Efectivo, Amortización de Capital, Pago Intereses.
+
+Intereses Totales (el monto calculado).
+
+Cada una de las comisiones y gastos desglosados (Registro Nacional de Valores, Contribución Anual, Calificación de Riesgo, Estructuración, Colocación, Representación, Inscripción Código ISIN, Publicación Aviso de Prensa, CVV, IVA, BVCC, Liquidación).
+
+COSTO TOTAL EMISION (la suma de todos los gastos + intereses).
+
+COSTO FINANCIAMIENTO (el porcentaje).
+
+Si la moneda es Bolívares, incluir una columna adicional para los montos en Bolívares (convertidos según el tipo de cambio inicial o al vencimiento, según corresponda).
+
+Resumen de la Inversión (Enfoque Emisor - ¡NADA DE ROI!):
+
+Solo debe contener:
+
+COSTO TOTAL EMISION (el monto calculado).
+
+COSTO FINANCIAMIENTO (el porcentaje).
+
+No se debe mostrar Ganancia Neta, ROI Total ni ROI Anualizado para el emisor.
+
+Cómo Invertir:
+
+"Abra una Cuenta de Corretaje Bursátil en una Casa de Bolsa", "Abra una Cuenta Custodia en la Caja Venezolana de Valores", "Solicite Prospecto y Hoja de Términos para mayor información de la emisión.", "Fondee su cuenta y coloque orden de compra." (Texto fijo).
+
+Contacto:
+
+Espacio para información de contacto (placeholder).
+
+6. Requisitos Generales:
+
+Tecnología Web: El desarrollo debe ser para una aplicación web (HTML, CSS, JavaScript para el frontend; un lenguaje de backend como Python/Node.js/PHP para la lógica de cálculo y generación de PDF).
+
+Código: Completo, funcional, modular y extensamente comentado.
+
+Diseño (UI/UX):
+
+La interfaz de usuario debe ser interactiva y fácil de usar, con la lógica de visibilidad de campos implementada de forma fluida y clara para el usuario.
+
+El reporte PDF debe ser profesional, con un diseño limpio y legible, replicando en lo posible la estética de las imágenes proporcionadas (encabezados de tabla, organización).
+
+Manejo de Errores: Implementar manejo de errores adecuado.
+
+Restricciones: NO usar alert() ni confirm() bajo ninguna circunstancia. Utilizar modales, mensajes en línea o feedback visual sofisticado para el usuario.
+
+Consideraciones de Rendimiento: Optimizar cálculos y generación de PDF para una experiencia web fluida.
+
+Agradezco profundamente tu atención a estos detalles cruciales y la complejidad de la lógica condicional. Estoy a disposición para cualquier aclaración adicional.
