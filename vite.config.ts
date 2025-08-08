@@ -17,7 +17,7 @@ export default defineConfig({
       : []),
   ],
 
-  // ✨ NUEVO: rutas relativas, clave para que cargue bien dentro de WordPress
+  // 👉 Rutas relativas para que cargue bien dentro de WP
   base: "",
 
   resolve: {
@@ -28,26 +28,24 @@ export default defineConfig({
     },
   },
 
-  // Tu root ya apunta a /client (donde está index.html)
+  // Ya tienes root en /client (donde está tu index.html)
   root: path.resolve(import.meta.dirname, "client"),
 
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
 
-    // ✨ NUEVO: genera manifest.json para integrarlo desde PHP en WP
+    // 👉 Necesario para WP (leer assets desde PHP)
     manifest: true,
 
-    // ✨ NUEVO: fuerza a Vite a tomar /client/index.html como entry (WP-friendly)
+    // 👉 Como root ya es /client, el entry debe ser "index.html"
+    // (o puedes omitir todo rollupOptions y Vite usará <root>/index.html)
     rollupOptions: {
-      input: path.resolve(import.meta.dirname, "client", "index.html"),
+      input: "index.html",
     },
   },
 
   server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
+    fs: { strict: true, deny: ["**/.*"] },
   },
 });
