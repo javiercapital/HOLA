@@ -16,6 +16,10 @@ export default defineConfig({
         ]
       : []),
   ],
+
+  // ✨ NUEVO: rutas relativas, clave para que cargue bien dentro de WordPress
+  base: "",
+
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -23,11 +27,23 @@ export default defineConfig({
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
   },
+
+  // Tu root ya apunta a /client (donde está index.html)
   root: path.resolve(import.meta.dirname, "client"),
+
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+
+    // ✨ NUEVO: genera manifest.json para integrarlo desde PHP en WP
+    manifest: true,
+
+    // ✨ NUEVO: fuerza a Vite a tomar /client/index.html como entry (WP-friendly)
+    rollupOptions: {
+      input: path.resolve(import.meta.dirname, "client", "index.html"),
+    },
   },
+
   server: {
     fs: {
       strict: true,
